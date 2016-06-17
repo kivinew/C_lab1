@@ -7,6 +7,7 @@
 и возвращает указатель на первый. С помощью функции найти все пары.*/
 
 #include <stdio.h>
+#include <stdlib.h>
 #include <locale.h>
 #include <conio.h>
 
@@ -16,7 +17,7 @@ void fill();
 int find();
 
 int  p;                                                                     // переменная - точка отсчёта
-char *str = "1jan2feb3mar4ram3naj1bef21";									// исходная строка
+char str[40] = {0};															// исходная строка
 char subStr[SIZE+1] = {0};													// массив-подстрока
 int lenght = SIZE;															// длина подстроки для поиска совпадений
 
@@ -24,7 +25,9 @@ int main()
 {
 	setlocale(LC_ALL, "russian");
 	int result;
-	printf("Ваша строка: %s", str);
+	printf("Введите строку:\n");
+	scanf_s("%40s", str, 40);
+	//printf("Ваша строка: %s", str);
 	printf("\n\n");
 	printf("Поиск фрагментов: \n");
 	for (p = 0; *(str+p)!='\0'; p++)				                        // проходим по всей строке
