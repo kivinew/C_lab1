@@ -27,7 +27,6 @@ int main()
 	int result;
 	printf("Введите строку:\n");
 	scanf_s("%40s", str, 40);
-	//printf("Ваша строка: %s", str);
 	printf("\n\n");
 	printf("Поиск фрагментов: \n");
 	for (p = 0; *(str+p)!='\0'; p++)				                        // проходим по всей строке
