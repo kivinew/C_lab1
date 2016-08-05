@@ -19,47 +19,29 @@
 
 void fill();
 int find();
-void proc(char []);
+void proc(char c[]);
 void destructor();
 void enterString();
+void showString();
 int  p;                                                                     // переменная - точка отсчёта
 char *str;										                            // исходная строка
 char *subStr;                                                               // подстрока фрагмента для поиска совпадений
-int length = 40;															// длина подстроки
+int length = 40;															// длина строки
 int main()
 {
     SetConsoleTitleA( "LAB1 by vk.com/KIVINEW" ) ;
 	setlocale(LC_ALL, "russian");
     str = (char*) malloc(length * sizeof(char));						    // память для исходной строки
-    //str = " ";
     subStr = (char*) malloc(length / 2 * sizeof(char));                     // память для подстроки вдвое меньше
-    //int result;
 	printf("Введите строку:\t");
-    enterString();
+    enterString();                                                          // ввод строки
     printf("\nВаша строка: ");
-    int i;
-    for (i = 0; i<length; i++)
-    {
-        printf("%c",*str++);
-    }
-    str -= i;
+    showString();                                                           // вывод строки
     destructor();
+    while(_getch()!=27);
     exit(0);
-	//printf("\n\n");
-	//printf("Поиск фрагментов: \n");
-	//for (p = 0; *ptr++!='\0'; p++)				                        // проходим по всей строке
-	{
-		fill();
-		//result = find();
-        proc(str);
-		//if (result!=0)
-		//{
-		//	printf("Указатель: %p\t", str+p);
-		//	printf("Индекс повтора = %d \t", result);
-		//	printf("Фрагмент: %s\n", subStr);
-		//}
-	}
-	//printf("\nПовторов больше нет\n");
+	fill();
+    proc(str);
 	_getch();
 	return 0;
 }
@@ -113,7 +95,6 @@ void proc(char c[]) {
         }
         else putchar(c[i]);
     }
-    //printf("\n:%s", c);
     return;
 }
 
@@ -127,17 +108,24 @@ void destructor()
 void enterString()
 {
     int i;
-    for (i = 0; i < length; i++)
+    for (i = 0; i < length; i++, str++)
     {
         *str = _getch();
         printf("%c", *str);
-        if (*str++ == 13) 
-        {
-            //str -= i;
-            break;
-        }
+        if (*str == 13) break;
     }
     str -= i;
-    length = i - 1;
+    length = i;
+    return;
+}
+
+void showString()
+{
+    int i;
+    for (i = 0; i<length; i++)
+    {
+        printf("%c", *str++);
+    }
+    str -= i;
     return;
 }
