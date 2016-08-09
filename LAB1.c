@@ -43,11 +43,10 @@ int main()
     printf("\nНажми ENTER...\n");
     int i, compareResult, 
         found = 0;
-    for (i = 0; i < length - 2; i++)
+    for (i = 0; i <= length - 2*lengthSS; i++)
     {
         do
         {
-            //while (_getch() != ENTER);
             fillSubString(i);
             showString(subStr, lengthSS);
             printf("|");
@@ -59,10 +58,43 @@ int main()
                 printf("\nНайден инвертированный фрагмент (%d)!\n", found);
             }
         } while (compareResult);
+
         lengthSS = 3;
     }
     printf("\nНажми ESC...\n");
     while (_getch() != ESC);
+    return 0;
+}
+
+int stringCmp(int begin)													// сравнение подстроки с инвертированным
+{                                                                           // фрагментом исходной строки
+    int count = 0;                                                          // количество совпадения символов
+    char *reset = str,
+        *resetSS = subStr;                                                  // запомним начальный адрес подстроки
+    str += begin + lengthSS;                                                // сдвиг указателя в исходной строке на длину подстроки
+    do
+    {
+        if (!(lengthSS - count))
+        {
+            str = reset;
+            subStr = resetSS;
+            return count;
+        }
+        if (*subStr == *str)                                                
+        {   // при совпадении символов 
+            str++;                                                          // происходит сдвиг обоих
+            subStr++;                                                       // указателей
+            count++;                                                        // и количество совпавших символов
+        }                                                                   // увеличивается
+        else
+        {   // при несовпадении символов
+            str++;                                                          // сдвигаем указатель в исходной строке
+            subStr = resetSS;                                               // сброс указателя подстроки в начало
+            count = 0;                                                      // обнуляем количество совпадений
+        } 
+    } while (str - reset < length);
+    str = reset;
+    subStr = resetSS;
     return 0;
 }
 
@@ -78,52 +110,19 @@ void fillSubString(int begin)				                                // заполн
     return;
 }
 
-int stringCmp(int begin)													// сравнение подстроки с фрагментом исходной строки
-{
-    int position = 0;
-    char *reset = str,
-        *resetSS = subStr;                                                  // запомним начальный адрес подстроки
-    str += lengthSS;                                                        // 
-    do
-    {
-        if (!*str)
-        {
-            str = reset;
-            subStr = resetSS;
-            return 0;
-        }
-        if (*subStr == *str)                                                // при совпадении символов
-        {                                                                   // происходит сдвиг обоих
-            subStr++;                                                       // указателей
-            str++;                                                          //
-            position++;
-        }                                                                   //
-        else                                                                // при несовпадении символов
-        {                                                                   // ...
-            str++;                                                          // сдвигаем указатель в исходной строке
-            subStr = resetSS;                                               // сброс указателя подстроки в начало
-            position = 0;
-        }
-    } while (lengthSS-position);
-    str = reset;
-    subStr = resetSS;
-    return position;
-}
-
-void destructor()
-{
-    free(str);
-    free(subStr);
-    return;
-}
-
-int enterString()
+int enterString()                                                           // посимвольный ввод строки 
 {
     int i;
     for (i = 0; i < length; i++, str++)
     {
         *str = _getch();
-        if (*str == 13) break;
+        if (*str == ENTER) break;
+        if (*str < '!')
+        {
+            str--;
+            i--;
+            continue;
+        }
         printf("%c", *str);
     }
     str -= i;
@@ -137,5 +136,12 @@ void showString(char *string, int stringLength)                             // �
     {
         printf("%c", *string++);
     }
+    return;
+}
+
+void destructor()
+{
+    free(str);
+    free(subStr);
     return;
 }
