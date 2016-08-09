@@ -37,7 +37,7 @@ int main()
     length = enterString();                                                 // ввод строки
     if (length == EXIT_CODE)
     {
-        //destructor();
+        destructor();
         return 0;
     }
     printf("\nВаша строка: ");
@@ -60,12 +60,11 @@ int main()
         } while (compareResult);
         lengthSS = 3;
     }
-    printf("\nНажми ESC...\n");
-    while (_getch() != ESC);
+    printf("\nНажми ENTER...\n");
+    while (_getch() != ENTER);
     system("cls");
     length = 40;
-    main();
-    destructor();
+    main();                                                                 // зацикливание программы (выход по ESC)
     return 0;
 }
 // сравнение инвертированной подстроки с фрагментом исходной строки
@@ -93,7 +92,7 @@ int stringCmp(int begin)
         {
             str = reset;
             subStr = resetSS;
-            count = 0;
+            if (count < 3) count = 0;
             return count;
         }
     } while (lengthSS - count != 0);
@@ -120,7 +119,11 @@ int enterString()
     for (i = 0; i < length; i++, str++)
     {
         *str = _getch();
-        if (*str == ESC) return EXIT_CODE;
+        if (*str == ESC)
+        {
+            str -= i;
+            return EXIT_CODE;
+        }
         if (*str == ENTER) break;
         if (*str < '!')
         {
