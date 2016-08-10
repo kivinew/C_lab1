@@ -246,3 +246,4 @@ ModelManifest.xml
 *.filters
 *.vcxproj
 *.sln
+*.exe

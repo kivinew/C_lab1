@@ -9,6 +9,7 @@
 функция, производящая поиск некоторого фрагмента переменной размерности,
 может либо запоминать эту размерность во внешней переменной, либо отмечать каким-либо
 символом окончание этого фрагмента в самой строке.*/
+
 #define ESC         27
 #define ENTER       13
 #define EXIT_CODE   -1
@@ -18,10 +19,10 @@
 #include <malloc.h>
 #include <Windows.h>
 void fillSubString(int);                                                    // аргумент - положение в исходной строке
-int stringCmp(int);                                                         // сравнение подстроки с фрагментом исходной строки
-void destructor();
+char* stringCmp(char*);                                                       // аргумент - положение в исходной строке
+void memFree();                                                             // освобождение памяти из-под строк
 int enterString();                                                          // ввод строки
-void showString(char *, int);                                               // вывод строки (аргументы, строка и её длина)
+void showString(char *, int);                                               // аргументы - строка и её длина
 ///-------------------------------------------------------------------------
 char *str;										                            // исходная строка
 char *subStr;                                                               // подстрока фрагмента для поиска совпадений
@@ -34,29 +35,32 @@ int main()
     str = (char*) malloc(length * sizeof(char));						    // память для исходной строки
     subStr = (char*) malloc(length / 2 * sizeof(char));                     // память для подстроки вдвое меньше
     printf("Введите строку:\t");
-    length = enterString();                                                 // ввод строки
+    length = enterString();                                                 // ввод строки вернёт её длину
     if (length == EXIT_CODE)
     {
-        destructor();
+        memFree();
         return 0;
     }
     printf("\nВаша строка: ");
     showString(str, length);                                                // вывод строки
-    int i, compareResult, 
+    int i, 
         found = 0;
+    char *startSearchPtr = str,
+        *compareResult;
     for (i = 0; i <= length - 2*lengthSS; i++)
     {
         do
         {
             fillSubString(i);
-            compareResult = stringCmp(i);
+            compareResult = stringCmp(startSearchPtr);
             if (compareResult)
             {
                 printf("\nНайден инвертированный фрагмент: ");
-                showString(subStr, lengthSS);
+                showString(compareResult, lengthSS);
                 found++;                                                    // увеличиваем счётчик совпадений
                 lengthSS++;
             }
+            startSearchPtr++;
         } while (compareResult);
         lengthSS = 3;
     }
@@ -68,37 +72,40 @@ int main()
     return 0;
 }
 // сравнение инвертированной подстроки с фрагментом исходной строки
-int stringCmp(int begin)													
+char* stringCmp(char *beginPtr)													
 { 
     int count = 0;                                                          // количество совпадения символов
-    char *reset = str,
-        *resetSS = subStr;                                                  // запомним начальный адрес подстроки
-    str += begin + lengthSS;                                                // сдвиг указателя в исходной строке на длину подстроки
+    char *reset = beginPtr,                                                 // сохраним начальный адрес строки
+        *resetSS = subStr;                                                  // и начальный адрес подстроки
+    beginPtr += lengthSS;                                                   // сдвиг указателя в исходной строке на длину подстроки
     do
     {
-        if (*subStr == *str)                                                
+        if (*subStr == *beginPtr)                                                
         {   // при совпадении символов 
-            str++;                                                          // происходит сдвиг обоих
+            beginPtr++;                                                     // происходит сдвиг обоих
             subStr++;                                                       // указателей
             count++;                                                        // и количество совпавших символов
         }                                                                   // увеличивается
         else
         {   // при несовпадении символов
-            str++;                                                          // сдвигаем указатель в исходной строке
+            beginPtr++;                                                     // сдвигаем указатель в исходной строке
             subStr = resetSS;                                               // сброс указателя подстроки в начало
             count = 0;                                                      // обнуляем количество совпадений
         }
-        if (str - reset >= length)
+        if (beginPtr - reset >= length)
         {
-            str = reset;
             subStr = resetSS;
-            if (count < 3) count = 0;
-            return count;
+            if (count < 3)
+            {
+                count = 0;
+                beginPtr = NULL;
+            }
+            return beginPtr;
         }
     } while (lengthSS - count != 0);
-    str = reset;
+    beginPtr = reset;
     subStr = resetSS;
-    return count;
+    return beginPtr;
 }
 // создание подстроки путём присваивания инвертированного фрагмента исходной строки
 void fillSubString(int begin)				                                // заполнение дополнительного массива
@@ -147,7 +154,7 @@ void showString(char *string, int stringLength)
     return;
 }
 // освободить память из под строк
-void destructor()
+void memFree()
 {
     free(str);
     free(subStr);
