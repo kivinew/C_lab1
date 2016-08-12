@@ -18,49 +18,52 @@
 #include <conio.h>
 #include <malloc.h>
 #include <Windows.h>
-void fillSubString(int);                                                    // аргумент - положение в исходной строке
-char* stringCmp(char*);                                                       // аргумент - положение в исходной строке
-void memFree();                                                             // освобождение памяти из-под строк
-int enterString();                                                          // ввод строки
+void memFree(char*, char*);                                                 // освобождение памяти из-под строк
+void gotoxy(int, int);
 void showString(char *, int);                                               // аргументы - строка и её длина
+void fillSubString(char *, int, char *, int);
+char* stringCmp(char *, int, char*, int);                                   // аргумент - положение в исходной строке
+int enterString(char*, int);                                                // ввод строки
 ///-------------------------------------------------------------------------
-char *str;										                            // исходная строка
-char *subStr;                                                               // подстрока фрагмента для поиска совпадений
-int length = 40;															// длина строки
-int lengthSS = 3;                                                           // длина подстроки
+
 int main()
 {
     SetConsoleTitleA("LAB1 by vk.com/KIVINEW");
     setlocale(LC_ALL, "russian");
+    char *str;										                        // исходная строка
+    char *subStr;                                                           // подстрока фрагмента для поиска совпадений
+    int length = 40;														// длина строки
+    int lengthSS = 3;                                                       // длина подстроки
     str = (char*) malloc(length * sizeof(char));						    // память для исходной строки
     subStr = (char*) malloc(length / 2 * sizeof(char));                     // память для подстроки вдвое меньше
     printf("Введите строку:\t");
-    length = enterString();                                                 // ввод строки вернёт её длину
+    length = enterString(str, length);                                      // ввод строки вернёт её длину
     if (length == EXIT_CODE)
     {
-        memFree();
+        memFree(str, subStr);
         return 0;
     }
     printf("\nВаша строка: ");
     showString(str, length);                                                // вывод строки
-    int i, 
+    int i,
         found = 0;
-    char *startSearchPtr = str,
-        *compareResult;
-    for (i = 0; i <= length - 2*lengthSS; i++)
+    char *compareResult;
+    for (i = 0; i <= length - 2 * lengthSS; i++)
     {
         do
         {
-            fillSubString(i);
-            compareResult = stringCmp(startSearchPtr);
+            fillSubString(str, i, subStr, lengthSS);
+            compareResult = stringCmp(str, length, subStr, lengthSS);
             if (compareResult)
             {
-                printf("\nНайден инвертированный фрагмент: ");
+                gotoxy(16 + i, 2 + found);
                 showString(compareResult, lengthSS);
+                printf(" ===> ");
+                showString(subStr, lengthSS);
                 found++;                                                    // увеличиваем счётчик совпадений
-                lengthSS++;
+                lengthSS++;                                                 // и длину фрагмента для следующей проверки
             }
-            startSearchPtr++;
+            str++;
         } while (compareResult);
         lengthSS = 3;
     }
@@ -72,43 +75,53 @@ int main()
     return 0;
 }
 // сравнение инвертированной подстроки с фрагментом исходной строки
-char* stringCmp(char *beginPtr)													
-{ 
-    int count = 0;                                                          // количество совпадения символов
-    char *reset = beginPtr,                                                 // сохраним начальный адрес строки
+char* stringCmp(char *str, int length, char *subStr, int lengthSS)
+{
+    int count = 0, shift;                                                   // количество совпадения символов
+    char *reset = str,                                                      // сохраним начальный адрес строки
         *resetSS = subStr;                                                  // и начальный адрес подстроки
-    beginPtr += lengthSS;                                                   // сдвиг указателя в исходной строке на длину подстроки
+    str += lengthSS;                                                        // сдвиг указателя в исходной строке на длину подстроки
+    if (lengthSS > 3)
+    {
+        shift = lengthSS - 3;
+        str += shift;
+        subStr += shift;
+    }
     do
     {
-        if (*subStr == *beginPtr)                                                
+        if (*subStr == *str)
         {   // при совпадении символов 
-            beginPtr++;                                                     // происходит сдвиг обоих
-            subStr++;                                                       // указателей
+            subStr++;                                                       // 
             count++;                                                        // и количество совпавших символов
         }                                                                   // увеличивается
         else
         {   // при несовпадении символов
-            beginPtr++;                                                     // сдвигаем указатель в исходной строке
             subStr = resetSS;                                               // сброс указателя подстроки в начало
+            if (count >= 3)
+            {
+                return str;
+            }
             count = 0;                                                      // обнуляем количество совпадений
         }
-        if (beginPtr - reset >= length)
+                                                       // сдвиг относительно начала строки
+        if ( )                                     // проверка на выход за пределы строки
         {
             subStr = resetSS;
             if (count < 3)
             {
                 count = 0;
-                beginPtr = NULL;
+                str = NULL;
             }
-            return beginPtr;
+            return str;
         }
-    } while (lengthSS - count != 0);
-    beginPtr = reset;
+        str++;
+    } while (lengthSS - count != 0);                                        // проверка на выход за пределы подстроки
+    str -= count;
     subStr = resetSS;
-    return beginPtr;
+    return str;
 }
 // создание подстроки путём присваивания инвертированного фрагмента исходной строки
-void fillSubString(int begin)				                                // заполнение дополнительного массива
+void fillSubString(char *str, int begin, char *subStr, int lengthSS)		// заполнение дополнительного массива
 {
     int j, shift;
     for (j = 1; j <= lengthSS; j++)
@@ -120,7 +133,7 @@ void fillSubString(int begin)				                                // заполн
     return;
 }
 // посимвольный ввод строки 
-int enterString()                                                           
+int enterString(char *str, int length)
 {                                                                           // возвращает длину введённой строки
     int i;                                                                  // ввод невизуальных символов игнорируется
     for (i = 0; i < length; i++, str++)
@@ -144,7 +157,7 @@ int enterString()
     return i;
 }
 // вывод строки (аргументы: строка и её длина)
-void showString(char *string, int stringLength)                             
+void showString(char *string, int stringLength)
 {
     int i;
     for (i = 0; i < stringLength; i++)
@@ -154,9 +167,17 @@ void showString(char *string, int stringLength)
     return;
 }
 // освободить память из под строк
-void memFree()
+void memFree(char *str, char *subStr)
 {
     free(str);
     free(subStr);
     return;
+}
+
+void gotoxy(int xpos, int ypos)
+{
+    COORD scrn;
+    HANDLE hOuput = GetStdHandle(STD_OUTPUT_HANDLE);
+    scrn.X = xpos; scrn.Y = ypos;
+    SetConsoleCursorPosition(hOuput, scrn);
 }
