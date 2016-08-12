@@ -36,6 +36,8 @@ int main()
     int lengthSS = 3;                                                       // длина подстроки
     str = (char*) malloc(length * sizeof(char));						    // память для исходной строки
     subStr = (char*) malloc(length / 2 * sizeof(char));                     // память для подстроки вдвое меньше
+    init(str, length);
+    init(subStr, lengthSS);
     printf("Введите строку:\t");
     length = enterString(str, length);                                      // ввод строки вернёт её длину
     if (length == EXIT_CODE)
@@ -58,7 +60,7 @@ int main()
             {
                 gotoxy(13 + i, 2 + found);
                 showString(str + i, lengthSS);
-                printf(" ===> ");
+                printf(" ---> ");
                 showString(subStr, lengthSS);
                 found++;                                                    // увеличиваем счётчик совпадений
                 lengthSS++;                                                 // и длину фрагмента для следующей проверки
@@ -80,9 +82,9 @@ char* stringCmp(char *str, int length, char *subStr, int lengthSS)
     char *reset = str,                                                      // сохраним начальный адрес строки
         *resetSS = subStr;                                                  // и начальный адрес подстроки
     str += lengthSS;                                                        // сдвиг указателя в исходной строке на длину подстроки
-    if (lengthSS > 3)                                                       // если уже найдено совпадение трёх символов
-    {                                                                       //
-        shift = lengthSS - 3;                                               // то сдвигаем указатель строки на  эти три символа
+    if (lengthSS > 3)                                                       // если уже найдено 
+    {                                                                       // совпадение трёх символов
+        shift = lengthSS - 3;                                               // то сдвигаем указатель строки на эти три символа
         str += shift;
         subStr += shift;
     }
@@ -116,7 +118,7 @@ char* stringCmp(char *str, int length, char *subStr, int lengthSS)
         }
         str++;
     } while (lengthSS - count != 0);                                        // проверка на выход за пределы подстроки
-    subStr = resetSS;
+    //subStr = resetSS;
     return str - count;
 }
 // создание подстроки путём присваивания инвертированного фрагмента исходной строки
