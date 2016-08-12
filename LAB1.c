@@ -53,17 +53,16 @@ int main()
         do
         {
             fillSubString(str, i, subStr, lengthSS);
-            compareResult = stringCmp(str, length, subStr, lengthSS);
+            compareResult = stringCmp(str, length - i, subStr, lengthSS);
             if (compareResult)
             {
-                gotoxy(16 + i, 2 + found);
-                showString(compareResult, lengthSS);
+                gotoxy(13 + i, 2 + found);
+                showString(str + i, lengthSS);
                 printf(" ===> ");
                 showString(subStr, lengthSS);
                 found++;                                                    // увеличиваем счётчик совпадений
                 lengthSS++;                                                 // и длину фрагмента для следующей проверки
             }
-            str++;
         } while (compareResult);
         lengthSS = 3;
     }
@@ -81,9 +80,9 @@ char* stringCmp(char *str, int length, char *subStr, int lengthSS)
     char *reset = str,                                                      // сохраним начальный адрес строки
         *resetSS = subStr;                                                  // и начальный адрес подстроки
     str += lengthSS;                                                        // сдвиг указателя в исходной строке на длину подстроки
-    if (lengthSS > 3)
-    {
-        shift = lengthSS - 3;
+    if (lengthSS > 3)                                                       // если уже найдено совпадение трёх символов
+    {                                                                       //
+        shift = lengthSS - 3;                                               // то сдвигаем указатель строки на  эти три символа
         str += shift;
         subStr += shift;
     }
@@ -97,14 +96,15 @@ char* stringCmp(char *str, int length, char *subStr, int lengthSS)
         else
         {   // при несовпадении символов
             subStr = resetSS;                                               // сброс указателя подстроки в начало
-            if (count >= 3)
-            {
-                return str;
+            if (count >= 3)                                                 // если ранее найдено полное совпадение фрагмента
+            {                                                               //
+                return str;                                                 // то его и возвращаем
             }
             count = 0;                                                      // обнуляем количество совпадений
         }
-                                                       // сдвиг относительно начала строки
-        if ( )                                     // проверка на выход за пределы строки
+        // сдвиг относительно начала строки
+
+        if (str - reset > length)                                           // проверка на выход за пределы строки
         {
             subStr = resetSS;
             if (count < 3)
@@ -116,9 +116,8 @@ char* stringCmp(char *str, int length, char *subStr, int lengthSS)
         }
         str++;
     } while (lengthSS - count != 0);                                        // проверка на выход за пределы подстроки
-    str -= count;
     subStr = resetSS;
-    return str;
+    return str - count;
 }
 // создание подстроки путём присваивания инвертированного фрагмента исходной строки
 void fillSubString(char *str, int begin, char *subStr, int lengthSS)		// заполнение дополнительного массива
