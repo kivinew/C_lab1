@@ -10,7 +10,7 @@
 может либо запоминать эту размерность во внешней переменной, либо отмечать каким-либо
 символом окончание этого фрагмента в самой строке.*/
 
-#define SIZE        60
+#define STR_SIZE    60
 #define ESC         27
 #define ENTER       13
 #define EXIT_CODE   -1
@@ -35,7 +35,7 @@ int main()
     setlocale(LC_ALL, "russian");
     string str;										                        // исходная строка
     string fragment;                                                        // подстрока фрагмента для поиска совпадений
-    int length = SIZE;														// длина строки
+    int length = STR_SIZE;													// длина строки
     int lengthFrag = 3;                                                     // длина подстроки
     str = (string) malloc(length * sizeof(char));						    // память для исходной строки
     fragment = (string) malloc(length / 2 * sizeof(char));                  // память для подстроки вдвое меньше
