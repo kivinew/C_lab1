@@ -9,16 +9,16 @@
 функция, производящая поиск некоторого фрагмента переменной размерности,
 может либо запоминать эту размерность во внешней переменной, либо отмечать каким-либо
 символом окончание этого фрагмента в самой строке.*/
-
-#define STR_SIZE    60
-#define ESC         27
-#define ENTER       13
-#define EXIT_CODE   -1
 #include <stdio.h>
 #include <locale.h>
 #include <conio.h>
 #include <malloc.h>
 #include <Windows.h>
+#define STR_SIZE    60
+#define ESC         27
+#define ENTER       13
+#define EXIT_CODE   -1
+
 typedef char* string;
 void memFree(string, string);                                               // освобождение памяти из-под строк
 void gotoxy(int, int);
@@ -28,7 +28,6 @@ void init(string, int);
 string stringCmp(string, int, string, int);                                 // аргумент - положение в исходной строке
 int enterString(string, int);                                               // ввод строки
 ///-------------------------------------------------------------------------
-
 int main()
 {
     SetConsoleTitleA("LAB1 by vk.com/KIVINEW");
@@ -36,7 +35,7 @@ int main()
     string str;										                        // исходная строка
     string fragment;                                                        // подстрока фрагмента для поиска совпадений
     int length = STR_SIZE;													// длина строки
-    int lengthFrag = 3;                                                     // длина подстроки
+    int lengthFrag = 4;                                                     // минимальная длина фрагмента
     str = (string) malloc(length * sizeof(char));						    // память для исходной строки
     fragment = (string) malloc(length / 2 * sizeof(char));                  // память для подстроки вдвое меньше
     init(str, length);
@@ -81,24 +80,23 @@ int main()
 string stringCmp(string str, int length, string fragment, int lengthFrag)
 {
     int count = 0;                                                          // количество совпадений символов
-    string reset = str,                                                     // сохраним начальный адрес строки
-        resetFrag = fragment;                                               // и подстроки
+    string resetFragment = fragment;                                        // сохраним начальный адрес подстроки
     str += lengthFrag;                                                      // сдвиг указателя в исходной строке на длину подстроки
     do
     {
         if (*fragment == *str)
         {   // при совпадении символов 
             str++;
-            fragment++;                                                     // 
-            count++;                                                        // и количество совпавших символов
-            continue;
-        }                                                                   // увеличивается
+            fragment++;                                                     // сдвигаются указатели обеих строк
+            count++;                                                        // и количество совпадений увеличивается.
+            continue;                                                       // следующая итерация
+        }
         else
         {   // при несовпадении символов
-            fragment = resetFrag;                                           // сброс указателя подстроки в начало
+            fragment = resetFragment;                                       // сброс указателя на фрагмент
             if (count >= lengthFrag)                                        // если ранее найдено полное совпадение фрагмента
-            {                                                               //
-                return str - count;                                         // то его и возвращаем
+            {                                                               // ...
+                return str - count;                                         // ...то его и возвращаем
             }
             count = 0;                                                      // обнуляем количество совпадений
         }
@@ -106,15 +104,15 @@ string stringCmp(string str, int length, string fragment, int lengthFrag)
     } while (*str && *fragment);                                            // проверка на выход за пределы строки
     return count >= lengthFrag?str - count:NULL;                            // если совпадение полное вернём указатель, иначе - NULL
 }
-// создание подстроки путём присваивания инвертированного сегмента исходной строки
-void fillSubString(string str, int begin, string fragment, int lengthFrag)	// заполнение дополнительного массива
+// создание подстроки путём присваивания инвертированного фрагмента исходной строки
+void fillSubString(string str, int begin, string fragment, int lengthFrag)
 {
-    int i, invert;
-    for (i = 1; i <= lengthFrag; i++)
+    int i=0, invert;
+    /*for (i = 1; i <= lengthFrag; i++)*/do
     {
         invert = begin + lengthFrag - i;
-        *fragment++ = *(str + invert);                                      // присваиваем подстроке инвертированный сегмент исходной строки
-    }
+        *fragment++ = *(str + invert);                                      // присваиваем подстроке инвертированный фрагмент исходной строки
+    } while (i++ <= lengthFrag);
     fragment -= lengthFrag;
     return;
 }
@@ -131,8 +129,8 @@ void init(string str, int length)
 // посимвольный ввод строки 
 int enterString(string str, int length)
 {                                                                           // возвращает длину введённой строки
-    int i;                                                                  // ввод невизуальных символов игнорируется
-    for (i = 0; i < length; i++, str++)
+    int i = 0;                                                              // ввод невизуальных символов игнорируется
+    do
     {
         *str = _getch();
         if (*str == ESC)
@@ -148,7 +146,7 @@ int enterString(string str, int length)
             continue;
         }
         printf("%c", *str);
-    }
+    } while (i < length);
     str -= i;
     return i;
 }
