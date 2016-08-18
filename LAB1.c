@@ -25,7 +25,7 @@ void gotoxy(int, int);
 void showString(string, int);                                               // аргументы - строка и её длина
 void fillSubString(string, int, string, int);
 void init(string, int);
-string stringCmp(string, int, string, int);                                 // аргумент - положение в исходной строке
+string stringCmp(string, string, int);                                 // аргумент - положение в исходной строке
 int enterString(string, int);                                               // ввод строки
 ///-------------------------------------------------------------------------
 int main()
@@ -52,48 +52,48 @@ int main()
     showString(str, length);                                                // вывод строки
     int i = 0,
         flag = 0;
-    string resultFrag,
-        longestWord = str;
-    do
+    string resultFragment = NULL,
+        lastFragment = NULL;
+    do                                                                      // цикл по всей введённой строке
     {
         do                                                                  // цикл
         {
             fillSubString(str, i, fragment, lengthFrag);
-            resultFrag = stringCmp(str + i, length - i, fragment, lengthFrag);   // функция возвращает указатель на фрагмент
-            if (resultFrag)
+            resultFragment = stringCmp(str + i, fragment, lengthFrag);      // функция возвращает указатель на фрагмент
+            if (resultFragment)
             {
                 lengthFrag++;                                               // увеличиваем длину фрагмента для следующей проверки
-                longestWord = resultFrag;
+                lastFragment = resultFragment;
                 flag = 1;
             }
             else
             {
-                lengthFrag--;
-                fillSubString(str, i, fragment, lengthFrag);
-                if (flag)
-                    resultFrag = longestWord;
-                else
-                    resultFrag = NULL;
+                if (lengthFrag > 3)
+                {
+                    lengthFrag--;
+                    fillSubString(str, i, fragment, lengthFrag);
+                }
+                resultFragment = flag?lastFragment:NULL;
                 flag = 0;
             }
         } while (flag);
-        if (resultFrag)
+        if (resultFragment)
         {
             printf("\n\nСовпадение: ");
             showString(str + i, lengthFrag);
             printf(" ---> ");
-            showString(resultFrag, lengthFrag);
+            showString(resultFragment, lengthFrag);
             i += lengthFrag;
         }
         lengthFrag = 3;
-    } while (i++ <= length - 2 * lengthFrag);
-    printf("\nНажми ENTER...\n");
+    } while (i++ <= length - 2 * lengthFrag);// нужно пересмотреть это условие, т.к. lengthFrag изменяется в теле цикла !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+    printf("\n\nНажми ENTER...");
     while (_getch() != ENTER);
     system("cls");
     return main();                                                          // зацикливание программы (выход по ESC)
 }
 // поиск сегмента строки, совпадающего с инвертированной подстрокой
-string stringCmp(string str, int length, string fragment, int lengthFrag)
+string stringCmp(string str, string fragment, int lengthFrag)
 {
     int count = 0;                                                          // количество совпадений символов
     string resetFragment = fragment;                                        // сохраним начальный адрес подстроки
