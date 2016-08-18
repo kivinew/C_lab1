@@ -53,7 +53,8 @@ int main()
     int i = 0,
         flag = 0;
     string resultFragment = NULL,
-        lastFragment = NULL;
+        lastFragment = NULL,
+        showedFrag = str;
     do                                                                      // цикл по всей введённой строке
     {
         do                                                                  // цикл
@@ -77,13 +78,13 @@ int main()
                 flag = 0;
             }
         } while (flag);
-        if (resultFragment)
+        if (resultFragment && !stringCmp(resultFragment, showedFrag, 2))
         {
             printf("\n\nСовпадение: ");
             showString(str + i, lengthFrag);
             printf(" ---> ");
             showString(resultFragment, lengthFrag);
-            i += lengthFrag;
+            showedFrag = resultFragment;
         }
         lengthFrag = 3;
     } while (i++ <= length - 2 * lengthFrag);// нужно пересмотреть это условие, т.к. lengthFrag изменяется в теле цикла !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -93,11 +94,11 @@ int main()
     return main();                                                          // зацикливание программы (выход по ESC)
 }
 // поиск сегмента строки, совпадающего с инвертированной подстрокой
-string stringCmp(string str, string fragment, int lengthFrag)
+string stringCmp(string str, string fragment, int lengthFrag)               // если не найдено, вернёт NULL
 {
     int count = 0;                                                          // количество совпадений символов
     string resetFragment = fragment;                                        // сохраним начальный адрес подстроки
-    str += lengthFrag;                                                      // сдвиг указателя в исходной строке на длину подстроки
+    str += lengthFrag;      // сдвиг указателя в исходной строке на длину подстроки !!!!!!!!!!!!!!!!!!!!!!!!ЗАЧЕМ?!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     do
     {
         if (*fragment == *str)
