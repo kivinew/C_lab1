@@ -23,7 +23,7 @@ typedef char* string;
 void memFree(string, string);                                               // освобождение памяти из-под строк
 void gotoxy(int, int);
 void showString(string, int);                                               // аргументы - строка и её длина
-void fillSubString(string, int, string, int);
+void fillSubString(string, string, int);
 void init(string, int);
 string stringCmp(string, string, int);                                 // аргумент - положение в исходной строке
 int enterString(string, int);                                               // ввод строки
@@ -59,8 +59,8 @@ int main()
     {
         do                                                                  // цикл
         {
-            fillSubString(str, i, fragment, lengthFrag);
-            resultFragment = stringCmp(str + i, fragment, lengthFrag);      // функция возвращает указатель на фрагмент
+            fillSubString(str, fragment, lengthFrag);                    // помещаем очередной фрагмент
+            resultFragment = stringCmp(str, fragment, lengthFrag);  // функция возвращает указатель на фрагмент
             if (resultFragment)
             {
                 lengthFrag++;                                               // увеличиваем длину фрагмента для следующей проверки
@@ -72,7 +72,7 @@ int main()
                 if (lengthFrag > 3)
                 {
                     lengthFrag--;
-                    fillSubString(str, i, fragment, lengthFrag);
+                    fillSubString(str, fragment, lengthFrag);
                 }
                 resultFragment = flag?lastFragment:NULL;
                 flag = 0;
@@ -81,13 +81,15 @@ int main()
         if (resultFragment && !stringCmp(resultFragment, showedFrag, 2))
         {
             printf("\n\nСовпадение: ");
-            showString(str + i, lengthFrag);
+            showString(str, lengthFrag);
             printf(" ---> ");
             showString(resultFragment, lengthFrag);
             showedFrag = resultFragment;
         }
         lengthFrag = 3;
+        str++;
     } while (i++ <= length - 2 * lengthFrag);// нужно пересмотреть это условие, т.к. lengthFrag изменяется в теле цикла !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+    str -= i;
     printf("\n\nНажми ENTER...");
     while (_getch() != ENTER);
     system("cls");
@@ -122,12 +124,12 @@ string stringCmp(string str, string fragment, int lengthFrag)               // �
     return count >= lengthFrag?str - count:NULL;                            // если совпадение полное вернём указатель, иначе - NULL
 }
 // создание подстроки путём присваивания инвертированного фрагмента исходной строки
-void fillSubString(string str, int begin, string fragment, int lengthFrag)
+void fillSubString(string str, string fragment, int lengthFrag)
 {
     int i = 1, invert;
     do
     {
-        invert = begin + lengthFrag - i;
+        invert = lengthFrag - i;
         *fragment++ = *(str + invert);                                      // присваиваем подстроке инвертированный фрагмент исходной строки
     } while (i++ < lengthFrag);
     fragment -= lengthFrag;
