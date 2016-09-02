@@ -14,123 +14,108 @@
 #include <conio.h>
 #include <malloc.h>
 #include <Windows.h>
-#define STR_SIZE    60
+
+#define SIZE        60                                                      // размер исходной строки
+#define FRAG_SIZE    3                                                      // размер строки-фрагмента
 #define ESC         27
 #define ENTER       13
 #define EXIT_CODE   -1
-
 typedef char* string;
 void memFree(string, string);                                               // освобождение памяти из-под строк
 void gotoxy(int, int);
 void showString(string, int);                                               // аргументы - строка и её длина
-void fillSubString(string, string, int);
+void fillSubString(string, int, string, int);
 void init(string, int);
-string stringCmp(string, string, int);                                      // аргумент - положение в исходной строке
+string stringCmp(string, int, string, int);                                 // аргумент - положение в исходной строке
 int enterString(string, int);                                               // ввод строки
 ///-------------------------------------------------------------------------
+
 int main()
 {
     SetConsoleTitleA("LAB1 by vk.com/KIVINEW");
     setlocale(LC_ALL, "russian");
     string str;										                        // исходная строка
     string fragment;                                                        // подстрока фрагмента для поиска совпадений
-    int length = STR_SIZE;													// длина строки
-    int lengthFrag = 3;                                                     // минимальная длина фрагмента
+    int length = SIZE;														// длина строки
+    int lengthFrag = FRAG_SIZE;                                             // длина подстроки
     str = (string) malloc(length * sizeof(char));						    // память для исходной строки
     fragment = (string) malloc(length / 2 * sizeof(char));                  // память для подстроки вдвое меньше
     init(str, length);
     init(fragment, length / 2);
-    printf("Введи строку (ESC - выход):  ");
+    printf("Введите строку:\t");
     length = enterString(str, length);                                      // ввод строки вернёт её длину
     if (length == EXIT_CODE)
     {
         memFree(str, fragment);
         return 0;
     }
-    system("cls");
     printf("\nВаша строка: ");
     showString(str, length);                                                // вывод строки
     int i = 0,
-        flag = 0;
-    string resultFragment = NULL,
-           lastFragment = NULL;
-    do                                                                      // цикл по всей введённой строке
+        found = 0;
+    string compareResult;
+    do
     {
         do                                                                  // цикл
         {
-            fillSubString(str, fragment, lengthFrag);                       // помещаем очередной фрагмент
-            resultFragment = stringCmp(str, fragment, lengthFrag);          // функция возвращает указатель на фрагмент
-            if (resultFragment)
+            fillSubString(str, i, fragment, lengthFrag);
+            compareResult = stringCmp(str + i, length - i, fragment, lengthFrag);
+            if (compareResult)
             {
-                lengthFrag++;                                               // увеличиваем длину фрагмента для следующей проверки
-                lastFragment = resultFragment;
-                flag = 1;
+                gotoxy(13 + i, 2 + found);
+                showString(str + i, lengthFrag);
+                printf(" ---> ");
+                showString(compareResult, lengthFrag);
+                found++;                                                    // увеличиваем счётчик совпадений
+                lengthFrag++;                                               // и длину фрагмента для следующей проверки
             }
-            else
-            {
-                if (lengthFrag > 3)
-                {
-                    lengthFrag--;
-                    fillSubString(str, fragment, lengthFrag);
-                }
-                resultFragment = flag?lastFragment:NULL;
-                flag = 0;
-            }
-        } while (flag);
-        if (resultFragment)
-        {
-            printf("\n\nСовпадение: ");
-            showString(str, lengthFrag);
-            printf(" ---> ");
-            showString(resultFragment, lengthFrag);
-        }
+        } while (compareResult);
         lengthFrag = 3;
-        str++;
-    } while (i++ <= length - 2 * lengthFrag);// нужно пересмотреть это условие, lengthFrag изменяется в теле цикла !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-    str -= i;
-    printf("\n\nНажми ENTER...");
+    } while (i++ <= length - 2 * lengthFrag);
+    printf("\nНажми ENTER...\n");
     while (_getch() != ENTER);
     system("cls");
-    return main();                                                          // зацикливание программы (выход по ESC)
+    main();                                                                 // зацикливание программы (выход по ESC)
+    return 0;
 }
 // поиск сегмента строки, совпадающего с инвертированной подстрокой
-string stringCmp(string string1, string string2, int length)                // если не найдено, вернёт NULL
+string stringCmp(string str, int length, string fragment, int lengthFrag)
 {
     int count = 0;                                                          // количество совпадений символов
-    string reset = string2;                                                 // исходный адрес подстроки
-    string1 += length;      // сдвиг указателя в исходной строке на длину подстроки !!!!!!!!!!!!!!!!!!!!!!!!ЗАЧЕМ?!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+    string reset = str,                                                     // сохраним начальный адрес строки
+        resetFrag = fragment;                                               // и подстроки
+    str += lengthFrag;                                                      // сдвиг указателя в исходной строке на длину подстроки
     do
     {
-        if (*string1 == *string2)
-        {   /// при совпадении символов 
-            string1++;
-            string2++;                                                      // сдвигаются указатели обеих строк
-            count++;                                                        // и количество совпадений увеличивается.
-            continue;                                                       // следующая итерация
-        }
+        if (*fragment == *str)
+        {   // при совпадении символов 
+            str++;
+            fragment++;                                                     // 
+            count++;                                                        // и количество совпавших символов
+            continue;
+        }                                                                   // увеличивается
         else
-        {   /// при несовпадении символов
-            string2 = reset;                                                // сброс указателя на фрагмент
-            if (count >= length)                                            // если ранее найдено полное совпадение фрагмента
-            {                                                               // ...
-                return string1 - count;                                     // ...то его и возвращаем
+        {   // при несовпадении символов
+            fragment = resetFrag;                                           // сброс указателя подстроки в начало
+            if (count >= lengthFrag)                                        // если ранее найдено полное совпадение фрагмента
+            {                                                               //
+                return str - count;                                         // то его и возвращаем
             }
             count = 0;                                                      // обнуляем количество совпадений
         }
-        string1++;                                                          // сдвиг относительно начала строки
-    } while (*string1 && *string2);                                         // проверка на выход за пределы строки
-    return count >= length?string1 - count:NULL;                            // если совпадение полное вернём указатель, иначе - NULL
+        str++;                                                              // сдвиг относительно начала строки
+    } while (*str && *fragment);                                            // проверка на выход за пределы строки
+    return count >= lengthFrag?str - count:NULL;                            // если совпадение полное вернём указатель, иначе - NULL
 }
-// создание подстроки путём присваивания инвертированного фрагмента исходной строки
-void fillSubString(string str, string fragment, int lengthFrag)
+// создание подстроки путём присваивания инвертированного сегмента исходной строки
+void fillSubString(string str, int begin, string fragment, int lengthFrag)	// заполнение дополнительного массива
 {
-    int i = 1, invert;
-    do
+    int i, invert;
+    for (i = 1; i <= lengthFrag; i++)
     {
-        invert = lengthFrag - i;
-        *fragment++ = *(str + invert);                                      // присваиваем подстроке инвертированный фрагмент исходной строки
-    } while (i++ < lengthFrag);
-    *fragment = '\0';
+        invert = begin + lengthFrag - i;
+        *fragment++ = *(str + invert);                                      // присваиваем подстроке инвертированный сегмент исходной строки
+    }
     fragment -= lengthFrag;
     return;
 }
@@ -145,10 +130,10 @@ void init(string str, int length)
     return;
 }
 // посимвольный ввод строки 
-int enterString(string str, int length)                                     // возвращает длину введённой строки
-{                                                                           // ввод невизуальных символов игнорируется
-    int i = 0;
-    do
+int enterString(string str, int length)
+{                                                                           // возвращает длину введённой строки
+    int i;                                                                  // ввод невизуальных символов игнорируется
+    for (i = 0; i < length; i++, str++)
     {
         *str = _getch();
         if (*str == ESC)
@@ -156,11 +141,7 @@ int enterString(string str, int length)                                     // �
             str -= i;
             return EXIT_CODE;
         }
-        if (*str == ENTER)
-        {
-            *str = '\0';
-            break;
-        }
+        if (*str == ENTER) break;
         if (*str < '!')
         {
             str--;
@@ -168,20 +149,17 @@ int enterString(string str, int length)                                     // �
             continue;
         }
         printf("%c", *str);
-    } while (i++ < length && str++);
+    }
     str -= i;
     return i;
 }
 // вывод строки (аргументы: строка и её длина)
 void showString(string str, int length)
 {
-    if (str)
+    int i;
+    for (i = 0; i < length; i++)
     {
-        int i;
-        for (i = 0; i < length; i++)
-        {
-            printf("%c", *str++);
-        }
+        printf("%c", *str++);
     }
     return;
 }
